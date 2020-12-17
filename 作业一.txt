@@ -1,0 +1,530 @@
+package com.lala.bean;
+
+/**
+ * Created by 20901 on 2018/4/17.
+ */
+public class User {
+    private Integer id;
+    private String name;
+    private String password;
+    private int role;
+    public User() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+    public Integer getId() {
+        return id;
+    }
+    public void setId(Integer id) {
+        this.id = id;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getPassword() {
+        return password;
+    }
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    public int getRole() {
+        return role;
+    }
+    public void setRole(int role) {
+        this.role = role;
+    }
+}
+package com.lala.dao;
+
+/**
+ * Created by 20901 on 2018/4/17.
+ */
+
+import java.sql.ResultSet;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+
+import com.lala.bean.User;
+
+import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.PreparedStatement;
+
+
+
+
+public class UserDAO {
+    public static final String DBurl = "jdbc:mysql://127.0.0.1/test?characterEncoding=utf8&useSSL=true";
+    public static final String DBname = "com.mysql.jdbc.Driver";
+    public static final String DBuser = "root";
+    public static final String DBpassword = "root";
+
+
+    public User login(int id,String password) {
+
+        User u = null;
+        Connection connection =null;
+        PreparedStatement pstmt=null;
+        ResultSet resultSet=null;
+
+        //赋值
+        try {
+            try {
+                Class.forName(DBname);//指定连接类型
+                connection = (Connection)DriverManager.getConnection(DBurl, DBuser, DBpassword);//获取连接
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            //静态sql语句
+            String sql = "select * from user where id=? and password=?";
+            pstmt = (PreparedStatement) connection.prepareStatement(sql);
+            pstmt.setInt(1, id);
+            pstmt.setString(2, password);
+            resultSet = pstmt.executeQuery();
+
+            if(resultSet.next()){
+                u=new User();
+                u.setId(resultSet.getInt("id"));
+                u.setName(resultSet.getString("name"));
+                u.setPassword(resultSet.getString("password"));
+                u.setRole(resultSet.getInt("role"));
+                System.out.println("登录成功！");
+            }else{
+                System.out.println("用户名或者密码错误！");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            if(pstmt !=null){
+                try {
+                    pstmt.close();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+   if(connection !=null){
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+        }
+        return u;
+
+    }
+    public boolean addUser(User u) {
+        Connection connection = null;
+        PreparedStatement psmt = null;
+        boolean boo = false;
+
+        try {
+            try {
+                Class.forName(DBname);//指定连接类型
+                connection = (Connection)DriverManager.getConnection(DBurl, DBuser, DBpassword);//获取连接
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            String sql ="insert into user(id,name,password,role)values(?,?,?,?);";
+
+            psmt = (PreparedStatement) connection.prepareStatement(sql);
+
+            //运用实体对象进行参数赋值
+            psmt.setInt(1, u.getId());
+            psmt.setString(2, u.getName());
+            psmt.setString(3,u.getPassword());
+            psmt.setInt(4, u.getRole());
+
+            int result = psmt.executeUpdate();
+            if(result > 0){
+                boo = true;
+                System.out.println("插入数据成功");
+            }else{
+                System.out.println("未插入数据");
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }finally {
+            try {
+                connection.close();
+                psmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return boo;
+    }
+}
+<%--
+  Created by IntelliJ IDEA.
+  User: 20901
+  Date: 2018/3/5
+  Time: 20:05
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+  <head>
+    <title>主页</title>
+  </head>
+  <body>
+  <a href=LoginPageServlet?url=WEB-INF/pages/Login.jsp>登录页</a>
+  <a href=RegisterPageServlet?url=WEB-INF/pages/Register.jsp>注册页</a>
+  </body>
+</html>
+package com.lala.dispatcherServlet;
+
+import java.io.IOException;
+
+/**
+ * Created by 20901 on 2018/4/17.
+ */
+public class LoginPageServlet extends javax.servlet.http.HttpServlet {
+    protected void doPost(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
+        doGet(request, response);
+}
+
+    protected void doGet(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
+        String url=request.getParameter("url");
+        request.getRequestDispatcher(url).forward(request, response);
+    }
+}
+package com.lala.dispatcherServlet;
+
+import java.io.IOException;
+
+/**
+ * Created by 20901 on 2018/4/17.
+ */
+public class RegisterPageServlet extends javax.servlet.http.HttpServlet {
+    protected void doPost(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
+        doGet(request, response);
+    }
+
+    protected void doGet(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
+        String url=request.getParameter("url");
+        request.getRequestDispatcher(url).forward(request, response);
+    }
+}<%--
+  Created by IntelliJ IDEA.
+  User: 20901
+  Date: 2018/4/17
+  Time: 16:04
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>登录页</title>
+</head>
+<div style="text-align:center;margin-top:120px">
+    <form action="LoginServlet" method="post">
+        <table style="margin-left:40%">
+            <marquee width="200"scrolldelay="250">用户登录</marquee>
+
+            <tr>
+                <td>登录id：</td>
+                <td><input name="id" type="text" size="21"></td>
+            </tr>
+            <tr>
+                <td>密码:</td>
+                <td><input name="password" type="password" size="21"></td>
+            </tr>
+        </table>
+        <input type="submit" value="登录">
+        <input type="reset" value="重置">
+    </form>
+    <br>
+    <a href=RegisterPageServlet?url=WEB-INF/pages/Register.jsp>注册页</a>
+</div>
+</body>
+</html>
+package com.lala.service;
+
+/**
+ * Created by 20901 on 2018/4/17.
+ */
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.lala.bean.User;
+import com.lala.dao.UserDAO;
+
+public class LoginServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public LoginServlet() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+     */
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doPost(request, response);
+    }
+
+
+    /**
+     * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+     */
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("utf-8");
+        response.setContentType("text/html;charset=utf-8");
+        int id = Integer.parseInt(request.getParameter("id"));
+        String password = request.getParameter("password");
+        UserDAO userDAO = new UserDAO();
+        User user = userDAO.login(id, password);
+
+        if (user != null) {
+            request.getRequestDispatcher("WEB-INF/pages/Lsuccess.jsp").forward(request, response);
+        } else {
+            request.getRequestDispatcher("WEB-INF/pages/Lerror.jsp").forward(request, response);
+        }
+    }
+}  Created by IntelliJ IDEA.
+  User: 20901
+  Date: 2018/4/17
+  Time: 16:04
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>登录页</title>
+</head>
+<div style="text-align:center;margin-top:120px">
+    <form action="LoginServlet" method="post">
+        <table style="margin-left:40%">
+            <marquee width="200"scrolldelay="250">用户登录</marquee>
+
+            <tr>
+                <td>登录id：</td>
+                <td><input name="id" type="text" size="21"></td>
+            </tr>
+            <tr>
+                <td>密码:</td>
+                <td><input name="password" type="password" size="21"></td>
+            </tr>
+        </table>
+        <input type="submit" value="登录">
+        <input type="reset" value="重置">
+    </form>
+    <br>
+    <a href=RegisterPageServlet?url=WEB-INF/pages/Register.jsp>注册页</a>
+</div>
+</body>
+</html>
+package com.lala.service;
+
+/**
+ * Created by 20901 on 2018/4/17.
+ */
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.lala.bean.User;
+import com.lala.dao.UserDAO;
+
+public class LoginServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public LoginServlet() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+     */
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doPost(request, response);
+    }
+
+
+    /**
+     * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+     */
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("utf-8");
+        response.setContentType("text/html;charset=utf-8");
+        int id = Integer.parseInt(request.getParameter("id"));
+        String password = request.getParameter("password");
+        UserDAO userDAO = new UserDAO();
+        User user = userDAO.login(id, password);
+
+        if (user != null) {
+            request.getRequestDispatcher("WEB-INF/pages/Lsuccess.jsp").forward(request, response);
+        } else {
+            request.getRequestDispatcher("WEB-INF/pages/Lerror.jsp").forward(request, response);
+        }
+    }
+}<%--
+  Created by IntelliJ IDEA.
+  User: 20901
+  Date: 2018/4/17
+  Time: 20:25
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>登录成功页</title>
+</head>
+<body>
+恭喜你，登录成功了！！
+<a href="index.jsp">注册</a>
+</body>
+</html>
+package com.lala.service;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+import com.lala.bean.User;
+import com.lala.dao.UserDAO;
+
+/**
+ * Created by 20901 on 2018/4/18.
+ */
+@WebServlet(name = "RegisterServlet")
+public class RegisterServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("utf-8");
+        response.setContentType("text/html;charset=utf-8");
+        int id = Integer.parseInt(request.getParameter("id"));
+        String name = request.getParameter("name");
+        String password = request.getParameter("password");
+        int role = Integer.parseInt(request.getParameter("role"));
+
+        User u = new User();
+        u.setId(id);
+        u.setName(name);
+        u.setPassword(password);
+        u.setRole(role);
+
+        UserDAO userdao = new UserDAO();
+        boolean boo = userdao.addUser(u);
+
+        if (boo == true) {
+            request.getRequestDispatcher("WEB-INF/pages/Rsuccess.jsp").forward(request, response);
+        } else {
+            request.getRequestDispatcher("WEB-INF/pages/Rerror.jsp").forward(request, response);
+        }
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doPost(request, response);
+    }
+}
+<%--
+  Created by IntelliJ IDEA.
+  User: 20901
+  Date: 2018/4/18
+  Time: 16:11
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>注册成功页</title>
+</head>
+<body>
+恭喜你，注册成功了！！
+<a href="index.jsp">注册</a>
+</body>
+</html>
+<%--
+  Created by IntelliJ IDEA.
+  User: 20901
+  Date: 2018/4/18
+  Time: 16:11
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>注册失败页</title>
+</head>
+<body>
+注册失败了
+<a href="register.jsp">重新注册</a>
+</body>
+</html>
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+    <servlet>
+        <servlet-name>LoginPageServlet</servlet-name>
+        <servlet-class>com.lala.dispatcherServlet.LoginPageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginPageServlet</servlet-name>
+        <url-pattern>/LoginPageServlet</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RegisterPageServlet</servlet-name>
+        <servlet-class>com.lala.dispatcherServlet.RegisterPageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RegisterPageServlet</servlet-name>
+        <url-pattern>/RegisterPageServlet</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>com.lala.service.LoginServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/LoginServlet</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RegisterServlet</servlet-name>
+        <servlet-class>com.lala.service.RegisterServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RegisterServlet</servlet-name>
+        <url-pattern>/RegisterServlet</url-pattern>
+    </servlet-mapping>
+
+</web-app>
+
+
+
